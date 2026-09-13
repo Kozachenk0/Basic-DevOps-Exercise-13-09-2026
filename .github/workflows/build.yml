@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      
+
 permissions:
   id-token: write
   contents: read
@@ -49,6 +49,16 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Tag Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker tag my-web-app:${{ github.sha }} \
+            $ECR_REGISTRY/my-web-app:${{ github.sha }}
 
-      - name: Stop container
-        run: docker stop my-web-app
+      - name: Push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker push \
+            $ECR_REGISTRY/my-web-app:${{ github.sha }}
