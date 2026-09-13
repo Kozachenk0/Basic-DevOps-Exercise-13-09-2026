@@ -21,7 +21,21 @@ jobs:
         run: docker run -d -p 8080:80 --name my-web-app my-web-app:${{ github.sha }}
 
       - name: Test website
-        run: curl --fail http://localhost:8080
+        run: |
+          for i in {1..10}; do
+            if curl --fail http://localhost:8080; then
+              echo "Website is live!"
+              exit 0
+            fi
+
+            echo "Waiting for website..."
+            sleep 2
+          done
+
+          echo "Website failed to start"
+          docker logs my-web-app
+          exit 1
+
 
       - name: Stop container
         run: docker stop my-web-app
